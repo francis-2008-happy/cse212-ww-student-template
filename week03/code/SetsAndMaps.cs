@@ -21,8 +21,30 @@ public static class SetsAndMaps
     /// <param name="words">An array of 2-character words (lowercase, no duplicates)</param>
     public static string[] FindPairs(string[] words)
     {
-        // TODO Problem 1 - ADD YOUR CODE HERE
-        return [];
+        // Use a HashSet to store words we've seen for O(1) lookup
+        var seen = new HashSet<string>();
+        var result = new List<string>();
+
+        foreach (var word in words)
+        {
+            // Skip if both characters are the same (e.g., "aa")
+            if (word[0] == word[1])
+                continue;
+
+            // Create the reversed word using char concatenation (faster than new string(char[]))
+            var reversed = string.Concat(word[1], word[0]);
+
+            // Check if reversed word was already seen
+            if (seen.Contains(reversed))
+            {
+                result.Add($"{word} & {reversed}");
+            }
+            
+            // Add current word to seen set
+            seen.Add(word);
+        }
+
+        return result.ToArray();
     }
 
     /// <summary>
@@ -42,7 +64,17 @@ public static class SetsAndMaps
         foreach (var line in File.ReadLines(filename))
         {
             var fields = line.Split(",");
-            // TODO Problem 2 - ADD YOUR CODE HERE
+            // Degree is in the 4th column (index 3)
+            var degree = fields[3];
+            
+            if (degrees.ContainsKey(degree))
+            {
+                degrees[degree]++;
+            }
+            else
+            {
+                degrees[degree] = 1;
+            }
         }
 
         return degrees;
@@ -66,8 +98,51 @@ public static class SetsAndMaps
     /// </summary>
     public static bool IsAnagram(string word1, string word2)
     {
-        // TODO Problem 3 - ADD YOUR CODE HERE
-        return false;
+        // Count letters in word1 (ignoring spaces and case)
+        var letterCount = new Dictionary<char, int>();
+        
+        foreach (var c in word1)
+        {
+            if (c == ' ')
+                continue;
+            
+            var lowerChar = char.ToLower(c);
+            if (letterCount.ContainsKey(lowerChar))
+            {
+                letterCount[lowerChar]++;
+            }
+            else
+            {
+                letterCount[lowerChar] = 1;
+            }
+        }
+        
+        // Subtract counts for word2
+        foreach (var c in word2)
+        {
+            if (c == ' ')
+                continue;
+            
+            var lowerChar = char.ToLower(c);
+            if (letterCount.ContainsKey(lowerChar))
+            {
+                letterCount[lowerChar]--;
+            }
+            else
+            {
+                // Letter in word2 not found in word1
+                return false;
+            }
+        }
+        
+        // Check if all counts are zero
+        foreach (var count in letterCount.Values)
+        {
+            if (count != 0)
+                return false;
+        }
+        
+        return true;
     }
 
     /// <summary>
@@ -96,11 +171,20 @@ public static class SetsAndMaps
 
         var featureCollection = JsonSerializer.Deserialize<FeatureCollection>(json, options);
 
-        // TODO Problem 5:
-        // 1. Add code in FeatureCollection.cs to describe the JSON using classes and properties 
-        // on those classes so that the call to Deserialize above works properly.
-        // 2. Add code below to create a string out each place a earthquake has happened today and its magitude.
-        // 3. Return an array of these string descriptions.
-        return [];
+        // Create array of formatted strings for each earthquake
+        var results = new List<string>();
+        if (featureCollection?.Features != null)
+        {
+            foreach (var feature in featureCollection.Features)
+            {
+                if (feature?.Properties != null)
+                {
+                    var place = feature.Properties.Place;
+                    var mag = feature.Properties.Mag;
+                    results.Add($"{place} - Mag {mag}");
+                }
+            }
+        }
+        return results.ToArray();
     }
 }
